@@ -14,13 +14,15 @@ lazy val root = (project in file("."))
     .settings(
         name := "fun-cart",
         libraryDependencies ++= Seq(
-            "io.circe" %% "circe-core" % circeVersion,
-            "io.circe" %% "circe-generic" % circeVersion,
-            "io.circe" %% "circe-parser" % circeVersion,
             "com.typesafe.akka" %% "akka-actor" % akkaVersion,
             "com.typesafe.akka" %% "akka-stream" % akkaVersion,
             "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
             "de.heikoseeberger" %% "akka-http-circe" % AkkaHttpJsonVersion,
+
+            "io.circe" %% "circe-core" % circeVersion,
+            "io.circe" %% "circe-generic" % circeVersion,
+            "io.circe" %% "circe-parser" % circeVersion,
+
             scalaTest % Test
         )
     )

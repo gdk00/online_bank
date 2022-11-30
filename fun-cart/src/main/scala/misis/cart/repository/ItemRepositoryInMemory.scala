@@ -12,13 +12,13 @@ class ItemRepositoryInMemory extends ItemRepository {
         store.values.toList
     }
 
-    override def createItem(create: CreateItem): Item = {
+    override def create(create: CreateItem): Item = {
         val item = Item(id = UUID.randomUUID(), name = create.name, price = create.price)
         store.put(item.id, item)
         item
     }
 
-    override def updateItem(update: UpdateItem): Option[Item] = {
+    override def update(update: UpdateItem): Option[Item] = {
         store.get(update.id).map { item =>
             val updated = item.copy(price = update.price)
             store.put(item.id, updated)
@@ -26,7 +26,11 @@ class ItemRepositoryInMemory extends ItemRepository {
         }
     }
 
-    override def deleteItem(id: UUID) = {
+    override def delete(id: UUID) = {
         store.remove(id)
+    }
+
+    override def get(id: UUID): Item = {
+        store(id)
     }
 }

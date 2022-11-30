@@ -1,8 +1,37 @@
+###
 GET http://localhost:8080/items
-
 
 ###
 POST http://localhost:8080/item
 Content-Type: application/json
 
 {"name": "phone", "price": 10000}
+
+###
+POST http://localhost:8080/item
+Content-Type: application/json
+
+{"name": "cup", "price": 50}
+
+###
+POST http://localhost:8080/item
+Content-Type: application/json
+
+{"name": "pen", "price": 100}
+
+###
+GET http://localhost:8080/item/ba899e56-f449-4004-a2f0-14d194237e7a
+
+###
+PUT http://localhost:8080/item
+Content-Type: application/json
+
+{"id": "ba899e56-f449-4004-a2f0-14d194237e7a", "price": 30000}
+
+###
+DELETE http://localhost:8080/item/01923598-500d-4dbf-81b9-cd44dc8c370e
+
+
+###
+DELETE http://localhost:8080/item/6049df57-3276-4571-b790-8e7c5d7d83f0
+

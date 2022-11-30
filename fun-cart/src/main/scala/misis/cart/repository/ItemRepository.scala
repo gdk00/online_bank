@@ -6,7 +6,8 @@ import java.util.UUID
 
 trait ItemRepository {
     def list(): List[Item]
-    def createItem(item: CreateItem): Item
-    def updateItem(item: UpdateItem): Option[Item]
-    def deleteItem(id: UUID)
+    def get(id: UUID): Item
+    def create(item: CreateItem): Item
+    def update(item: UpdateItem): Option[Item]
+    def delete(id: UUID)
 }
