@@ -9,7 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class ItemRepositoryInMemory(implicit val ec: ExecutionContext) extends ItemRepository {
     private val store = mutable.Map[UUID, Item]()
 
-    override def list(): Future[List[Item]] = Future {
+    override def list(): Future[Seq[Item]] = Future {
         store.values.toList
     }
 

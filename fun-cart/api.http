@@ -26,7 +26,7 @@ GET http://localhost:8080/item/ba899e56-f449-4004-a2f0-14d194237e7a
 PUT http://localhost:8080/item
 Content-Type: application/json
 
-{"id": "ba899e56-f449-4004-a2f0-14d194237e7a", "price": 30000}
+{"id": "fd9e0d1d-75cc-4838-a85f-603163234d4b", "price": 30000}
 
 ###
 DELETE http://localhost:8080/item/01923598-500d-4dbf-81b9-cd44dc8c370e

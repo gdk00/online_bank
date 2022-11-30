@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Directives._
 import misis.cart.repository.ItemRepositoryInMemory
 import misis.cart.route._
 
-object CartHttpApp extends App {
+object CartMemoryApp extends App {
     implicit val system: ActorSystem = ActorSystem("CartApp")
     implicit val ec = system.dispatcher
     val repository = new ItemRepositoryInMemory
