@@ -8,6 +8,7 @@ import misis.cart.route._
 
 object CartHttpApp extends App {
     implicit val system: ActorSystem = ActorSystem("CartApp")
+    implicit val ec = system.dispatcher
     val repository = new ItemRepositoryInMemory
     val helloRoute = new HelloRoute().route
     val itemRoute = new ItemRoute(repository).route
