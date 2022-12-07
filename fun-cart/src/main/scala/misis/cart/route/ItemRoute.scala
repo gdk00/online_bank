@@ -1,5 +1,6 @@
 package misis.cart.route
 
+import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.Directives._
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
@@ -8,9 +9,12 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
-import misis.cart.repository.ItemRepository
+import misis.cart.repository.{Bigger100Exception, ItemRepository}
 
-class ItemRoute(repository: ItemRepository) extends FailFastCirceSupport {
+import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
+
+class ItemRoute(repository: ItemRepository)(implicit ec: ExecutionContext) extends FailFastCirceSupport {
     def route =
         (path("items") & get) {
             val list = repository.list()
@@ -28,7 +32,10 @@ class ItemRoute(repository: ItemRepository) extends FailFastCirceSupport {
             } ~
             path("item") {
                 (put & entity(as[UpdateItem])) { updateItem =>
-                    complete(repository.update(updateItem))
+                    onSuccess(repository.update(updateItem)) {
+                        case Right(value) => complete(value)
+                        case Left(s) => complete(StatusCodes.NotAcceptable, s)
+                    }
                 }
             } ~
             path("item" / JavaUUID) { id =>

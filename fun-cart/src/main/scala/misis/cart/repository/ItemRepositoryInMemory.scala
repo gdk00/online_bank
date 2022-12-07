@@ -19,12 +19,12 @@ class ItemRepositoryInMemory(implicit val ec: ExecutionContext) extends ItemRepo
         item
     }
 
-    override def update(update: UpdateItem): Future[Option[Item]] = Future {
+    override def update(update: UpdateItem): Future[Either[String, Item]] = Future {
         store.get(update.id).map { item =>
             val updated = item.copy(price = update.price)
             store.put(item.id, updated)
-            updated
-        }
+            Right(updated)
+        }.getOrElse(Left("Не найден элемент"))
     }
 
     override def delete(id: UUID) = Future {

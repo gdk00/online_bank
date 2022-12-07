@@ -28,16 +28,29 @@ class ItemRepositoryDb(implicit val ec: ExecutionContext, db: Database) extends 
         } yield res
     }
 
-    override def update(item: UpdateItem): Future[Option[Item]] = {
+    override def update(item: UpdateItem): Future[Either[String, Item]] = {
+        val query = itemTable
+            .filter(_.id === item.id)
+            .map(_.price)
+
         for {
-            _ <- db.run {
-                itemTable
-                    .filter(_.id === item.id)
-                    .map(_.price)
-                    .update(item.price)
+            oldPriceOpt <- db.run(query.result.headOption)
+            newPrice = item.price
+
+            updatePrice = oldPriceOpt.map { oldPrice =>
+                if (oldPrice > 100)
+                    Left("Больше 100")
+                else Right(oldPrice + newPrice)
+            }.getOrElse(Left("Не найдено элемент"))
+            future = updatePrice.map(price => db.run {
+                query.update(price)
+            }) match {
+                case Right(future) => future.map(Right(_))
+                case Left(s) => Future.successful(Left(s))
             }
+            updated <- future
             res <- find(item.id)
-        } yield res
+        } yield updated.map(_ => res.get)
     }
 
     override def delete(id: UUID): Future[Unit] = {
