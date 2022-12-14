@@ -1,18 +1,13 @@
 package misis.cart.route
 
-import akka.http.scaladsl.model.{StatusCode, StatusCodes}
-import akka.http.scaladsl.server._
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
-import misis.cart.model.{CreateItem, UpdateItem}
-import io.circe._
 import io.circe.generic.auto._
-import io.circe.parser._
-import io.circe.syntax._
-import misis.cart.repository.{Bigger100Exception, ItemRepository}
+import misis.cart.model.{CreateItem, UpdateItem}
+import misis.cart.repository.ItemRepository
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
 
 class ItemRoute(repository: ItemRepository)(implicit ec: ExecutionContext) extends FailFastCirceSupport {
     def route =

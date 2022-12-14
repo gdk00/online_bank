@@ -8,3 +8,15 @@ services:
       POSTGRES_PASSWORD: 1111
     ports:
       - 5434:5432
+
+  fun-cart:
+    image: misis-fun-cart
+    container_name: misis-fun-cart
+    build:
+      dockerfile: ./docker/Dockerfile
+      context: ../
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+    ports:
+      - 8080:8080

@@ -20,7 +20,7 @@ Content-Type: application/json
 {"name": "pen", "price": 100}
 
 ###
-GET http://localhost:8080/item/ba899e56-f449-4004-a2f0-14d194237e7a
+GET http://localhost:8080/item/d54b0535-a900-43e6-b2e0-17f5f070b528
 
 ###
 PUT http://localhost:8080/item
