@@ -9,4 +9,5 @@ trait CartRepository {
     def list(): Future[List[Cart]]
     def get(id: UUID): Future[Cart]
     def create(cart: CreateCart): Future[Cart]
+    def checkout(id: UUID, accountId: UUID): Future[String]
 }

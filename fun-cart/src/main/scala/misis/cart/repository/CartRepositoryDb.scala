@@ -1,13 +1,13 @@
 package misis.cart.repository
 import misis.cart.db.CartDb._
 import misis.cart.db.ItemDb._
-import misis.cart.model.{Cart, CartItem, CreateCart}
+import misis.cart.model.{Cart, CartItem, Checkout, CreateCart}
 import slick.jdbc.PostgresProfile.api._
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
-class CartRepositoryDb(implicit val ec: ExecutionContext, db: Database) extends CartRepository {
+class CartRepositoryDb(client: PaymentClient)(implicit val ec: ExecutionContext, db: Database) extends CartRepository {
     override def list(): Future[List[Cart]] = ???
 
     override def get(id: UUID): Future[Cart] = {
@@ -51,4 +51,11 @@ class CartRepositoryDb(implicit val ec: ExecutionContext, db: Database) extends 
         } yield cart
     }
 
+    def checkout(id: UUID, accountId: UUID): Future[String] = {
+
+        for {
+            cart <- get(id)
+            res <- client.payment(Checkout(accountId, cart.items.map(_.price).sum))
+        } yield res
+    }
 }

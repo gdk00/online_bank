@@ -24,6 +24,11 @@ class CartRoute(repository: CartRepository)(implicit ec: ExecutionContext) exten
                 get {
                     complete(repository.get(id))
                 }
+            } ~
+            path("cart"/ "checkout" / JavaUUID / JavaUUID) { case (id, accountId) =>
+                put {
+                    complete(repository.checkout(id, accountId))
+                }
             }
 
 }

@@ -1,5 +1,5 @@
 ###
-GET http://localhost:8080/items
+GET http://localhost:8081/items
 
 ###
 POST http://localhost:8080/item
@@ -38,6 +38,10 @@ DELETE http://localhost:8080/item/6049df57-3276-4571-b790-8e7c5d7d83f0
 ###
 GET /cart/0bd3e6e1-7657-464a-8787-a47e23324ff7
 Host: localhost:8080
+
+###
+PUT /cart/checkout/0bd3e6e1-7657-464a-8787-a47e23324ff7/9d41722d-0226-4140-855b-bba6909dded7
+Host: localhost:8081
 
 
 ###
