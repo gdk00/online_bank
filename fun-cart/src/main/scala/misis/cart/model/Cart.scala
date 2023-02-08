@@ -8,4 +8,5 @@ case class Cart(id: UUID = UUID.randomUUID(), items: List[CartItem], client: Str
 case class CreateCartItem(itemId: UUID, amount: Int)
 case class CreateCart(client: String, items: List[CreateCartItem])
 
-case class Checkout(id: UUID, money: Int)
+case class CheckoutRequest(id: UUID, money: Int)
+case class CheckoutResponse(id: UUID, phoneNumber: String, money: Int)

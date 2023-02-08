@@ -1,7 +1,7 @@
 package misis.cart.repository
 import misis.cart.db.CartDb._
 import misis.cart.db.ItemDb._
-import misis.cart.model.{Cart, CartItem, Checkout, CreateCart}
+import misis.cart.model.{Cart, CartItem, CheckoutRequest, CheckoutResponse, CreateCart}
 import slick.jdbc.PostgresProfile.api._
 
 import java.util.UUID
@@ -51,11 +51,10 @@ class CartRepositoryDb(client: PaymentClient)(implicit val ec: ExecutionContext,
         } yield cart
     }
 
-    def checkout(id: UUID, accountId: UUID): Future[String] = {
-
+    def checkout(id: UUID, accountId: UUID): Future[CheckoutResponse] = {
         for {
             cart <- get(id)
-            res <- client.payment(Checkout(accountId, cart.items.map(_.price).sum))
-        } yield res
+            response <- client.payment(CheckoutRequest(accountId, cart.items.map(_.price).sum))
+        } yield response
     }
 }
