@@ -1,7 +1,7 @@
 package misis.cart.repository
 import misis.cart.db.CartDb._
 import misis.cart.db.ItemDb._
-import misis.cart.model.{AddCartItem, Cart, CartItem, ChangeAmount, CreateCart}
+import misis.cart.model.{Cart, CartItem, CreateCart}
 import slick.jdbc.PostgresProfile.api._
 
 import java.util.UUID
@@ -13,28 +13,42 @@ class CartRepositoryDb(implicit val ec: ExecutionContext, db: Database) extends 
     override def get(id: UUID): Future[Cart] = {
         for {
             cartEntity <- db.run(cartTable.filter(_.id === id).result.head)
-            cartItemEntities <- db.run(cartItemTable.filter(_.cartId === id).result)
-            items <- Future.sequence( cartItemEntities.map { cie =>
-                db.run(itemTable.filter(_.id === cie.id).result.head)
-                    .map(item => item -> cie)
-            })
+            items <- db.run(cartItemTable.join(itemTable).on { case (cartItem, item) => cartItem.itemId === item.id }
+                .filter { case (cartItem, _) => cartItem.cartId === id }
+                .result
+            )
         } yield Cart(
             id = cartEntity.id,
-            items = items.map { case (item, cie) =>
+            items = items.map { case (cartItem, item) =>
                 CartItem(
-                    id = cie.id,
+                    id = cartItem.id,
                     item = item,
-                    amount = cie.amount,
-                    price = cie.price
+                    amount = cartItem.amount,
+                    price = cartItem.price
                 )
             }.toList,
             client = cartEntity.client
         )
     }
 
-    override def create(cart: CreateCart): Future[Cart] = ???
+    override def create(createCart: CreateCart): Future[Cart] = {
+        val cartEntity = CartEntity(client = createCart.client)
+        for {
+            items <- Future.sequence(
+                createCart
+                    .items
+                    .map(cartItem => db.run(itemTable.filter(_.id === cartItem.itemId).result.head.map(_ -> cartItem)))
+            )
+            cartItemEntities = items.map { case (item, cartItem) =>
+                CartItemEntity(itemId = item.id, cartId = cartEntity.id, amount = cartItem.amount, price = item.price)
+            }
+            _ <- db.run(
+                DBIO.sequence(
+                    (cartTable += cartEntity) :: cartItemEntities.map(cartItem => cartItemTable += cartItem)
+                )
+            )
+            cart <- get(cartEntity.id)
+        } yield cart
+    }
 
-    override def addItem(cartItem: AddCartItem): Future[Cart] = ???
-
-    override def changeAmount(amount: ChangeAmount): Future[Cart] = ???
 }

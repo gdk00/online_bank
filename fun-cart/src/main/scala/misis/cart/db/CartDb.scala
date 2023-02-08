@@ -7,9 +7,9 @@ import slick.lifted.Tag
 import java.util.UUID
 
 object CartDb {
-    case class CartItemEntity(id: UUID, itemId: UUID, cartId: UUID, amount: Int, price: Int)
+    case class CartItemEntity(id: UUID = UUID.randomUUID(), itemId: UUID, cartId: UUID, amount: Int, price: Int)
 
-    class CartItemTable(tag: Tag) extends Table[CartItemEntity](tag, "carts"){
+    class CartItemTable(tag: Tag) extends Table[CartItemEntity](tag, "cart_items"){
         val id = column[UUID]("id", O.PrimaryKey)
         val itemId = column[UUID]("item_id")
         val cartId = column[UUID]("cart_id")
@@ -19,7 +19,7 @@ object CartDb {
         def * = (id, itemId, cartId, amount, price) <> ((CartItemEntity.apply _).tupled, CartItemEntity.unapply)
     }
 
-    case class CartEntity(id: UUID, client: String)
+    case class CartEntity(id: UUID = UUID.randomUUID(), client: String)
 
     class CartTable(tag: Tag) extends Table[CartEntity](tag, "carts"){
         val id = column[UUID]("id", O.PrimaryKey)

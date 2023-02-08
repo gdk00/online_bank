@@ -24,16 +24,6 @@ class CartRoute(repository: CartRepository)(implicit ec: ExecutionContext) exten
                 get {
                     complete(repository.get(id))
                 }
-            } ~
-            path("cart") {
-                (post & entity(as[AddCartItem])) { item =>
-                    complete(repository.addItem(item))
-                }
-            } ~
-            path("cart" / "changeAmount") {
-                (put & entity(as[ChangeAmount])) { amount =>
-                    complete(repository.changeAmount(amount))
-                }
             }
 
 }

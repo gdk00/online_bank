@@ -35,3 +35,21 @@ DELETE http://localhost:8080/item/01923598-500d-4dbf-81b9-cd44dc8c370e
 ###
 DELETE http://localhost:8080/item/6049df57-3276-4571-b790-8e7c5d7d83f0
 
+###
+GET /cart/0bd3e6e1-7657-464a-8787-a47e23324ff7
+Host: localhost:8080
+
+
+###
+POST /cart
+Host: localhost:8080
+Content-Type: application/json
+
+{
+  "client": "Mark",
+  "items": [
+    {
+      "itemId": "fd9e0d1d-75cc-4838-a85f-603163234d4b",
+      "amount": 2
+    }]
+}
