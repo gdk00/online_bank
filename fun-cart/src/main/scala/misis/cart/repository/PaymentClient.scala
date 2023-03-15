@@ -12,17 +12,21 @@ import misis.cart.model.{CheckoutRequest, CheckoutResponse}
 import scala.concurrent.{ExecutionContext, Future}
 
 class PaymentClient(implicit val ec: ExecutionContext, actorSystem: ActorSystem) extends FailFastCirceSupport {
-    def payment(checkout: CheckoutRequest): Future[CheckoutResponse] = {
+    def payment(checkout: CheckoutRequest): Future[Either[String, CheckoutResponse]] = {
         val request = HttpRequest(
             method = HttpMethods.PUT,
-            uri = s"http://localhost:8080/user/money/withdraw",
+            uri = s"http://localhost:8081/user/money/withdraw",
             entity = HttpEntity(MediaTypes.`application/json`, checkout.asJson.noSpaces)
         )
-        for {
+        val future = for {
             response <- Http().singleRequest(request)
             result <- Unmarshal(response).to[CheckoutResponse]
+                .map(res => Right(res))
+                .recoverWith {
+                    case _ => Unmarshal(response).to[String].map(Left(_))
+                }
         } yield result
 
+        future.recover(e => Left(e.getMessage))
     }
-
 }

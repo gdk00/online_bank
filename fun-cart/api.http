@@ -40,8 +40,8 @@ GET /cart/0bd3e6e1-7657-464a-8787-a47e23324ff7
 Host: localhost:8080
 
 ###
-PUT /cart/checkout/0bd3e6e1-7657-464a-8787-a47e23324ff7/9d41722d-0226-4140-855b-bba6909dded7
-Host: localhost:8081
+PUT /cart/checkout/0bd3e6e1-7657-464a-8787-a47e23324ff7/2c7df8c2-069e-4931-a6c3-e6bb68b0c3b3
+Host: localhost:8080
 
 
 ###

@@ -51,7 +51,7 @@ class CartRepositoryDb(client: PaymentClient)(implicit val ec: ExecutionContext,
         } yield cart
     }
 
-    def checkout(id: UUID, accountId: UUID): Future[CheckoutResponse] = {
+    def checkout(id: UUID, accountId: UUID): Future[Either[String, CheckoutResponse]] = {
         for {
             cart <- get(id)
             response <- client.payment(CheckoutRequest(accountId, cart.items.map(_.price).sum))
