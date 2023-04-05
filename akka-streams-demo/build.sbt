@@ -12,20 +12,14 @@ lazy val postgresVersion = "42.3.1"
 
 lazy val root = (project in file("."))
     .settings(
-        name := "akka-bank",
+        name := "akka-streams",
         libraryDependencies ++= Seq(
             "com.typesafe.akka" %% "akka-actor" % akkaVersion,
             "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-            "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-            "de.heikoseeberger" %% "akka-http-circe" % AkkaHttpJsonVersion,
 
             "io.circe" %% "circe-core" % circeVersion,
             "io.circe" %% "circe-generic" % circeVersion,
             "io.circe" %% "circe-parser" % circeVersion,
-
-            "com.typesafe.slick" %% "slick"                % slickVersion,
-            "com.typesafe.slick" %% "slick-hikaricp"       % slickVersion,
-            "org.postgresql"     % "postgresql"            % postgresVersion,
 
             "ch.qos.logback"     % "logback-classic"       % "1.2.3"
         )
