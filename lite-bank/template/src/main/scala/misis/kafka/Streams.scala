@@ -12,6 +12,5 @@ import org.apache.kafka.clients.producer.ProducerRecord
 
 import scala.concurrent.ExecutionContext
 
-class Streams(repository: Repository)(implicit val system: ActorSystem, executionContext: ExecutionContext){
-
-}
+class Streams(repository: Repository)(implicit val system: ActorSystem, executionContext: ExecutionContext)
+    extends WithKafka {}
