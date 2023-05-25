@@ -11,8 +11,7 @@ import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 
-
-object OperationApp extends App  {
+object OperationApp extends App {
     implicit val system: ActorSystem = ActorSystem("OperationApp")
     implicit val ec = system.dispatcher
     val port = ConfigFactory.load().getInt("port")
