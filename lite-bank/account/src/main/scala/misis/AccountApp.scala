@@ -3,9 +3,9 @@ package misis
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import com.typesafe.config.ConfigFactory
-import misis.kafka.Streams
+import misis.kafka.AccountStreams
 import misis.model.AccountUpdate
-import misis.repository.Repository
+import misis.repository.AccountRepository
 import misis.route.Route
 import io.circe.generic.auto._
 import io.circe.parser._
@@ -18,8 +18,8 @@ object AccountApp extends App {
     val accountId = ConfigFactory.load().getInt("account.id")
     val defAmount = ConfigFactory.load().getInt("account.amount")
 
-    private val repository = new Repository(accountId, defAmount)
-    private val streams = new Streams(repository)
+    private val repository = new AccountRepository(accountId, defAmount)
+    private val streams = new AccountStreams(repository)
 
     implicit val commandTopicName: TopicName[AccountUpdate] = streams.simpleTopicName[AccountUpdate]
 //    val rand = new scala.util.Random

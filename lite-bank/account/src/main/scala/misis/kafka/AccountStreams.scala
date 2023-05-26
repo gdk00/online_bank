@@ -4,13 +4,21 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.Sink
 import io.circe.generic.auto._
 import misis.WithKafka
-import misis.model.{AccountUpdate, AccountUpdated, ExternalAccountUpdate, ExternalAccountUpdated}
-import misis.repository.Repository
+import misis.model.{
+    AccountUpdate,
+    AccountUpdated,
+    ExternalAccountUpdate,
+    ExternalAccountUpdated,
+    ExternalTransactionComplete
+}
+import misis.repository.AccountRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Streams(repository: Repository)(implicit val system: ActorSystem, executionContext: ExecutionContext)
-    extends WithKafka {
+class AccountStreams(repository: AccountRepository)(implicit
+    val system: ActorSystem,
+    executionContext: ExecutionContext
+) extends WithKafka {
 
     def group = s"account-${repository.accountId}"
 
@@ -41,7 +49,8 @@ class Streams(repository: Repository)(implicit val system: ActorSystem, executio
                                 command.dstAccountId,
                                 command.value,
                                 is_source = false,
-                                success = true
+                                success = true,
+                                categoryId = command.categoryId
                             )
                         )
                     )
@@ -59,11 +68,38 @@ class Streams(repository: Repository)(implicit val system: ActorSystem, executio
                             command.dstAccountId,
                             command.value,
                             is_source = false,
-                            success = false
+                            success = false,
+                            categoryId = command.categoryId
                         )
                     )
                 )
             }
+
+        }
+        .to(Sink.ignore)
+        .run()
+
+    kafkaSource[ExternalAccountUpdate]
+        .filter(command => repository.account.id == command.dstAccountId && !command.is_source)
+        .mapAsync(1) { command =>
+            println(
+                s"Аккаунт ${command.dstAccountId} пополнен на  " +
+                    s"${command.value} переводом с аккаунта ${command.dstAccountId} " +
+                    s"Баланс: ${repository.account.amount + command.value}"
+            )
+
+            repository
+                .update(command.value)
+                .map(_ =>
+                    produceCommand(
+                        ExternalTransactionComplete(
+                            command.srcAccountId,
+                            command.dstAccountId,
+                            command.value,
+                            categoryId = command.categoryId
+                        )
+                    )
+                )
 
         }
         .to(Sink.ignore)
