@@ -7,14 +7,14 @@ import scala.concurrent.Future
 class AccountRepository() {
     var accountList: List[Account] = List()
 
-    def update(value: Int, accountId: Int): AccountUpdated = {
+    def update(value: Int, accountId: Int, isFee: Boolean = false): AccountUpdated = {
         accountList.indexWhere(acc => acc.id == accountId) match {
             case -1 =>
                 AccountUpdated(accountId = accountId, value = value, success = false, balance = 0)
             case index =>
                 val srcAccount = accountList(index)
                 val dstAccount = Account(srcAccount.id, srcAccount.amount + value)
-                if (dstAccount.amount >= 0) {
+                if (dstAccount.amount >= 0 || isFee) {
 //                    accountList = accountList.updated(index, dstAccount)
                     accountList = accountList.map(acc => if (acc.id == dstAccount.id) dstAccount else acc)
                     println(

@@ -10,8 +10,8 @@ val AkkaHttpJsonVersion = "1.39.2"
 lazy val slickVersion = "3.3.3"
 lazy val postgresVersion = "42.3.1"
 
-lazy val account = ProjectRef(base = file("../account"), id = "account")
 lazy val common = ProjectRef(base = file("../common"), id = "common")
+lazy val account = ProjectRef(base = file("../account"), id = "account")
 
 lazy val fee = (project in file("."))
     .dependsOn(common)
@@ -21,10 +21,8 @@ lazy val fee = (project in file("."))
         libraryDependencies ++= Seq(
             "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
             "de.heikoseeberger" %% "akka-http-circe" % AkkaHttpJsonVersion,
-
-            "ch.qos.logback"     % "logback-classic"       % "1.2.3"
+            "ch.qos.logback" % "logback-classic" % "1.2.3"
         )
     )
-
 
 enablePlugins(JavaAppPackaging)

@@ -27,7 +27,7 @@ class AccountStreams(repository: AccountRepository)(implicit
 
     kafkaSource[AccountUpdate]
         .mapAsync(1) { command =>
-            Future.successful(repository.update(command.value, command.accountId))
+            Future.successful(repository.update(command.value, command.accountId, isFee = command.isFee))
         }
         .to(kafkaSink)
         .run()

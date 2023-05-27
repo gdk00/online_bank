@@ -4,18 +4,15 @@ import java.util.UUID
 
 case class Account(id: Int, amount: Int) {
     def update(value: Int): Account = {
-        if (amount + value >= 0)
-            this.copy(amount = amount + value)
-        else
-            this.copy()
+        this.copy(amount = amount + value)
     }
 }
 
 trait Command
 case class CreateAccount(accountId: Int)
-case class AccountUpdate(accountId: Int, value: Int)
+case class AccountUpdate(accountId: Int, value: Int, isFee: Boolean = false)
 case class ExternalAccountUpdate(srcAccountId: Int, dstAccountId: Int, value: Int, is_source: Boolean, categoryId: Int)
-
+case class FeeRequest(srcAccountId: Int, transactionValue: Int)
 trait Event
 case class AccountUpdated(accountId: Int, value: Int, success: Boolean, balance: Int)
 

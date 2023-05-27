@@ -4,8 +4,9 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.Sink
 import io.circe.generic.auto._
 import misis.{TopicName, WithKafka}
-import misis.model.{AccountUpdate, AccountUpdated, ExternalAccountUpdate, ExternalTransactionComplete}
+import misis.model.{AccountUpdate, AccountUpdated, ExternalAccountUpdate, ExternalTransactionComplete, FeeRequest}
 import misis.repository.CashbackRepository
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class CashbackStreams(repository: CashbackRepository)(implicit val system: ActorSystem, executionContext: ExecutionContext) extends WithKafka {
@@ -16,12 +17,14 @@ class CashbackStreams(repository: CashbackRepository)(implicit val system: Actor
             val cashback = repository.getCashback(command)
             if (cashback.is_allowed) {
                 println(s"Кэшбек для категории ${command.categoryId} акканта ${command.srcAccountId} начислен")
-                Future.successful(produceCommand(AccountUpdate(command.srcAccountId, cashback.value)))
+                produceCommand(AccountUpdate(command.srcAccountId, cashback.value))
             }
           else {
                 println(s"Кэшбек для категории ${command.categoryId} акканта ${command.srcAccountId} не предназначен")
-                Future.successful(command)
             }
+            produceCommand(FeeRequest(command.srcAccountId, command.value))
+
+          Future.successful()
         }
         .to(Sink.ignore)
         .run()
