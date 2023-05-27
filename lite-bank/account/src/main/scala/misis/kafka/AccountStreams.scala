@@ -7,109 +7,97 @@ import misis.WithKafka
 import misis.model.{
     AccountUpdate,
     AccountUpdated,
+    CreateAccount,
     ExternalAccountUpdate,
     ExternalAccountUpdated,
     ExternalTransactionComplete
 }
 import misis.repository.AccountRepository
 
+import scala.concurrent
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Failure
 
 class AccountStreams(repository: AccountRepository)(implicit
     val system: ActorSystem,
     executionContext: ExecutionContext
 ) extends WithKafka {
 
-    def group = s"account-${repository.accountId}"
+    def group = s"account"
 
     kafkaSource[AccountUpdate]
-        .filter(command => repository.account.id == command.accountId && repository.account.amount + command.value >= 0)
         .mapAsync(1) { command =>
-            repository.update(command.value).map(_ => AccountUpdated(command.accountId, command.value))
+            Future.successful(repository.update(command.value, command.accountId))
+        }
+        .to(kafkaSink)
+        .run()
+
+    kafkaSource[CreateAccount]
+        .mapAsync(1) { command =>
+            println(s"создан аккаунт id = ${command.accountId}")
+            Future.successful(repository.create(command.accountId))
         }
         .to(kafkaSink)
         .run()
 
     kafkaSource[ExternalAccountUpdate]
-        .filter(command => repository.account.id == command.srcAccountId && command.is_source)
+        .filter(command => command.is_source)
         .mapAsync(1) { command =>
-            if (repository.account.amount - command.value >= 0) {
-                println(
-                    s"C аккаунта ${command.srcAccountId} переведена сумма " +
-                        s"${command.value} на аккаунт ${command.dstAccountId} " +
-                        s"Баланс: ${repository.account.amount - command.value}"
-                )
+            val accountUpdated = repository.update(-command.value, command.srcAccountId)
+            val dstExists = repository.accountList.exists(acc => acc.id == command.dstAccountId)
 
-                repository
-                    .update(-command.value)
-                    .map(_ =>
-                        produceCommand(
-                            ExternalAccountUpdated(
-                                command.srcAccountId,
-                                command.dstAccountId,
-                                command.value,
-                                is_source = false,
-                                success = true,
-                                categoryId = command.categoryId
-                            )
-                        )
-                    )
+            val externalAccountUpdated = ExternalAccountUpdated(
+                command.srcAccountId,
+                command.dstAccountId,
+                command.value,
+                is_source = false,
+                success = false,
+                categoryId = command.categoryId
+            )
+
+            if (!dstExists)
+                println(
+                    s"C аккаунта ${command.srcAccountId} не может быть переведена сумма " +
+                        s"${command.value} на аккаунт ${command.dstAccountId} (не существует)"
+                )
+            else if (accountUpdated.success && dstExists) {
+                println(
+                    s"C аккаунта ${command.srcAccountId} (баланс: ${accountUpdated.balance}) переведена сумма " +
+                        s"${command.value} на аккаунт ${command.dstAccountId}"
+                )
+                externalAccountUpdated.success = true
+
             } else {
                 println(
                     s"C аккаунта ${command.srcAccountId} не может быть переведена сумма " +
                         s"${command.value} на аккаунт ${command.dstAccountId} " +
-                        s"Баланс: ${repository.account.amount}"
-                )
-
-                Future.successful(
-                    produceCommand(
-                        ExternalAccountUpdated(
-                            command.srcAccountId,
-                            command.dstAccountId,
-                            command.value,
-                            is_source = false,
-                            success = false,
-                            categoryId = command.categoryId
-                        )
-                    )
+                        s"Баланс: ${accountUpdated.balance}"
                 )
             }
-
+            produceCommand(externalAccountUpdated)
+            Future.successful()
         }
         .to(Sink.ignore)
         .run()
 
-    kafkaSource[ExternalAccountUpdate]
-        .filter(command => repository.account.id == command.dstAccountId && !command.is_source)
+    kafkaSource[ExternalAccountUpdated]
+        .filter(command => !command.is_source && command.success)
         .mapAsync(1) { command =>
+            val accountUpdated = repository.update(command.value, command.dstAccountId)
             println(
                 s"Аккаунт ${command.dstAccountId} пополнен на  " +
-                    s"${command.value} переводом с аккаунта ${command.dstAccountId} " +
-                    s"Баланс: ${repository.account.amount + command.value}"
+                    s"${command.value} переводом с аккаунта ${command.dstAccountId} (баланс: ${accountUpdated.balance})"
             )
-
-            repository
-                .update(command.value)
-                .map(_ =>
-                    produceCommand(
-                        ExternalTransactionComplete(
-                            command.srcAccountId,
-                            command.dstAccountId,
-                            command.value,
-                            categoryId = command.categoryId
-                        )
-                    )
+            produceCommand(
+                ExternalTransactionComplete(
+                    command.srcAccountId,
+                    command.dstAccountId,
+                    command.value,
+                    categoryId = command.categoryId
                 )
+            )
+            Future.successful()
 
-        }
-        .to(Sink.ignore)
-        .run()
-
-    kafkaSource[AccountUpdated]
-        .filter(event => repository.account.id == event.accountId)
-        .map { e =>
-            println(s"Аккаунт ${e.accountId} обновлен на сумму ${e.value}. Баланс: ${repository.account.amount}")
-            e
         }
         .to(Sink.ignore)
         .run()

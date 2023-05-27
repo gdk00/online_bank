@@ -1,26 +1,13 @@
+POST localhost:8071/create/1
+
+###
+POST localhost:8071/create/2
+
+###
+POST localhost:8071/update/1/123
+
 ###
 POST localhost:8071/update/2/123
-
-###
-POST localhost:8071/update/3/123
-
-
-###
-POST localhost:8071/update/1/-12
-
-###
-POST localhost:8071/update/3/4564
-
-###
-POST localhost:8071/transfer
-Content-Type: application/json
-
-{
-  "sourceId": 2,
-  "destinationId": 3,
-  "value": 122,
-  "categoryId": 1
-}
 
 ###
 POST localhost:8071/transfer
@@ -29,6 +16,17 @@ Content-Type: application/json
 {
   "sourceId": 1,
   "destinationId": 2,
-  "value": 124,
+  "value": 123,
+  "categoryId": 1
+}
+
+###
+POST localhost:8071/transfer
+Content-Type: application/json
+
+{
+  "sourceId": 2,
+  "destinationId": 1,
+  "value": 123,
   "categoryId": 1
 }
