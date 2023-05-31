@@ -67,6 +67,15 @@ services:
     networks:
       - misis-local
 
+  account-1:
+    image: misis-account
+    container_name: misis-account
+    build:
+      dockerfile: docker/DockerfileAccount
+      context: ./
+    networks:
+      - misis-local
+
 
 networks:
   misis-local:

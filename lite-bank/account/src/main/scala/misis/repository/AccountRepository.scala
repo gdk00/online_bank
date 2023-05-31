@@ -4,8 +4,9 @@ import misis.model.{Account, CreateAccount, AccountUpdated}
 
 import scala.concurrent.Future
 
-class AccountRepository() {
+class AccountRepository(startId: Int) {
     var accountList: List[Account] = List()
+    var startIdFrom: Int = startId
 
     def update(value: Int, accountId: Int, isFee: Boolean = false): AccountUpdated = {
         accountList.indexWhere(acc => acc.id == accountId) match {

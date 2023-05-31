@@ -15,8 +15,9 @@ object AccountApp extends App {
     implicit val system: ActorSystem = ActorSystem("App")
     implicit val ec = system.dispatcher
     val port = ConfigFactory.load().getInt("port")
+    val startId = ConfigFactory.load().getInt("start_id_from")
 
-    private val repository = new AccountRepository()
+    private val repository = new AccountRepository(startId)
     private val streams = new AccountStreams(repository)
 
     implicit val commandTopicName: TopicName[AccountUpdate] = streams.simpleTopicName[AccountUpdate]

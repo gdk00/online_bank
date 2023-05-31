@@ -23,9 +23,10 @@ class AccountStreams(repository: AccountRepository)(implicit
     executionContext: ExecutionContext
 ) extends WithKafka {
 
-    def group = s"account"
+    def group = s"account-${repository.startIdFrom}"
 
     kafkaSource[AccountUpdate]
+        .filter(command => repository.accountList.exists(acc => acc.id == command.accountId))
         .mapAsync(1) { command =>
             Future.successful(repository.update(command.value, command.accountId, isFee = command.isFee))
         }
@@ -33,18 +34,22 @@ class AccountStreams(repository: AccountRepository)(implicit
         .run()
 
     kafkaSource[CreateAccount]
+        .filter(command =>
+            command.accountId <= repository.startIdFrom && command.accountId + 10000 > repository.startIdFrom
+        )
         .mapAsync(1) { command =>
             println(s"создан аккаунт id = ${command.accountId}")
+            Thread.sleep(2000)
             Future.successful(repository.create(command.accountId))
+
         }
         .to(kafkaSink)
         .run()
 
     kafkaSource[ExternalAccountUpdate]
-        .filter(command => command.is_source)
+        .filter(command => command.is_source && repository.accountList.exists(acc => acc.id == command.srcAccountId))
         .mapAsync(1) { command =>
             val accountUpdated = repository.update(-command.value, command.srcAccountId)
-            val dstExists = repository.accountList.exists(acc => acc.id == command.dstAccountId)
 
             val externalAccountUpdated = ExternalAccountUpdated(
                 command.srcAccountId,
@@ -55,12 +60,7 @@ class AccountStreams(repository: AccountRepository)(implicit
                 categoryId = command.categoryId
             )
 
-            if (!dstExists)
-                println(
-                    s"C аккаунта ${command.srcAccountId} не может быть переведена сумма " +
-                        s"${command.value} на аккаунт ${command.dstAccountId} (не существует)"
-                )
-            else if (accountUpdated.success && dstExists) {
+            if (accountUpdated.success) {
                 println(
                     s"C аккаунта ${command.srcAccountId} (баланс: ${accountUpdated.balance}) переведена сумма " +
                         s"${command.value} на аккаунт ${command.dstAccountId}"
@@ -81,7 +81,11 @@ class AccountStreams(repository: AccountRepository)(implicit
         .run()
 
     kafkaSource[ExternalAccountUpdated]
-        .filter(command => !command.is_source && command.success)
+        .filter(command =>
+            !command.is_source && command.success && repository
+                .accountList
+                .exists(acc => acc.id == command.dstAccountId)
+        )
         .mapAsync(1) { command =>
             val accountUpdated = repository.update(command.value, command.dstAccountId)
             println(
